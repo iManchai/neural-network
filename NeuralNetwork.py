@@ -28,23 +28,26 @@ class NeuralNetwork:
             layer.input = current_inputs
 
             # Weighted sum
-            layer.sum = np.dot(layer.input, layer.weights)
+            layer.weighted_sum = np.dot(current_inputs, layer.weights)
             
             # Activation function (Sigmoid)
-            output = sigmoid(layer.sum)
+            output = sigmoid(layer.weighted_sum)
 
             # Store the output of the layer
             layer.output = output
 
             # Update the current inputs for the next layer
             current_inputs = layer.output
+        # Return the output of the last layer
         return current_inputs
     
     def backpropagation(self, y):
-        output_layer = self.layers[-1]
+        output_layer = self.layers[len(self.layers) - 1]
 
         # Delta[j] = g'(input[j]) * (yj - aj)
-        output_layer.delta = sigmoid_derivative(output_layer.output) * (y - output_layer.output)
+        output_layer.delta = sigmoid_derivative(output_layer.weighted_sum) * (y - output_layer.output)
+
+        # If I don't put these comments I get confused.
 
         # It was already calculated the delta for the output layer, now we need to calculate the deltas for the hidden layers
         # so if we have 4 layers, the len is 4, but the index for the ouput layer is 3
@@ -52,7 +55,42 @@ class NeuralNetwork:
         # The -1 we are iterating through 0, and the other -1 menas that we are doing it in reverse order
         for i in range(len(self.layers) - 2, -1, -1):
             layer = self.layers[i] # Current layer
-            next_layer = self.layers[i + 1] # The nex layer
+            next_layer = self.layers[i + 1] # The next layer
 
-            # Delta[i] = g'(input[i]) * (delta[j] * w[j][i])
-            layer.delta = sigmoid_derivative(layer.output) * np.dot(next_layer.weights, next_layer.delta)
+            # Delta[i] = g'(input[i]) * (w[ij] * delta[j])
+            layer.delta = sigmoid_derivative(layer.weighted_sum) * np.dot(next_layer.delta, next_layer.weights.T)
+
+    def update_weights(self):
+        for layer in self.layers:
+            # w_ij = w_ij + learning_rate * (ai * delta[j]) 
+            layer.weights += self.learning_rate * np.matmul(np.atleast_2d(layer.input).T, np.atleast_2d(layer.delta))
+
+    # X: Matrix of inputs
+    # Y: Matrix of outputs
+    # epochs: Number of iterations
+    def train(self, x_train, y_train, x_test, epochs):
+        errors = []
+        for epoch in range(epochs):
+            output_train = self.forward(x_train)
+            error_train = np.mean((y_train - output_train) ** 2)
+            prediction_train = (output_train > 0.5).astype(int)
+            accuracy_train = np.mean(prediction_train == y_train)
+            errors.append(error_train)
+
+            # Backpropagation and update weights
+            self.backpropagation(y_train)
+            self.update_weights()
+
+            if epoch == 0 or epoch >= epochs - 10:
+                print(f"Epoch {epoch + 1}/{epochs}")
+                print(f"Train Error: {error_train * 100:.2f}%, Train Accuracy: {accuracy_train * 100:.2f}%")
+            # print("-" * 50)
+        return errors
+
+    def predict(self, X):
+        if (X.ndim == 1):
+            return self.forward(X)
+        else:
+            return np.array([self.forward(x) for x in X])
+
+

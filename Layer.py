@@ -7,12 +7,9 @@ class Layer:
         
         # Input for the layer
         self.input = None
-
         # Output of the layer
         self.output = None
-
         # Delta for backpropagation
         self.delta = None
-
         # Weighted sum
-        self.sum = None
+        self.weighted_sum = None
