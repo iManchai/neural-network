@@ -59,7 +59,7 @@ def main():
         path = os.path.join(os.path.dirname(__file__), nn_file_name)
         if os.path.exists(path):
           # Load the model from the file
-          # Create the NN (No matter the params, they will be overwritten)
+          # Create the NN (No matter the params, they will be overwritten as the layers and its weights will be loaded)
           nn = NeuralNetwork(2, 4, 4, 2, learning_rate=0.1)
           nn.load_model(nn_file_name)
           print("Modelo cargado exitosamente.")
@@ -70,6 +70,7 @@ def main():
         print("Opción no válida. Por favor, ingrese '1' o '2'.")
         return
       
+      # ============================================================================ #
       # What to do with the trained model
       # After training or loading the model, we can ask the user what to do with it
       while True:
@@ -118,7 +119,6 @@ def main():
           print(f"Modelo guardado en {save_file}")
         elif option == "4": 
           sys.exit("Saliendo del programa.")
-
         else:
           print("Opción no válida. Por favor, ingrese '1', '2', '3, o '4'.")
           return
