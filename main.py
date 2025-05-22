@@ -130,4 +130,5 @@ def main():
       print("Error: Archivo de configuración no encontrado.")
       return
 
-main()
+if __name__ == "__main__":
+  main()
