@@ -68,7 +68,7 @@ class NeuralNetwork:
     # X: Matrix of inputs
     # Y: Matrix of outputs
     # epochs: Number of iterations
-    def train(self, x_train, y_train, x_test, epochs):
+    def train(self, x_train, y_train, x_test, y_test, epochs):
         errors = []
         for epoch in range(epochs):
             output_train = self.forward(x_train)
@@ -81,10 +81,17 @@ class NeuralNetwork:
             self.backpropagation(y_train)
             self.update_weights()
 
-            if epoch == 0 or epoch >= epochs - 10:
-                print(f"Epoch {epoch + 1}/{epochs}")
-                print(f"Train Error: {error_train * 100:.2f}%, Train Accuracy: {accuracy_train * 100:.2f}%")
-            # print("-" * 50)
+            # Test the model
+            output_test = self.forward(x_test)
+            error_test = np.mean((y_test - output_test) ** 2)
+            prediction_test = (output_test > 0.5).astype(int)
+            accuracy_test = np.mean(prediction_test == y_test)
+            
+            
+            print(f"Epoch {epoch + 1}/{epochs}")
+            print(f"Train Error: {error_train * 100:.2f}%, Train Accuracy: {accuracy_train * 100:.2f}%")
+            print(f"Test Error: {error_test * 100:.2f}%, Test Accuracy: {accuracy_test * 100:.2f}%")
+            print("-" * 50)
         return errors
 
     def predict(self, X):
