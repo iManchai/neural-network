@@ -1,6 +1,8 @@
+
 import os
-from load_files import load_file
+import sys
 import numpy as np
+from functions import load_file
 from NeuralNetwork import NeuralNetwork
 
 
@@ -45,52 +47,82 @@ def main():
         nn = NeuralNetwork(num_inputs_neurons, num_hidden_layers, num_neurons_hidden_layer, num_output_neurons, learning_rate=0.1)
 
         # Train the NN
-        nn.train(X_train, y_train, X_test, y_test, epochs)
+        nn.train(X_train, y_train, epochs, X_test, y_test,)
 
         # Test the NN    
         for i in range(len(X_test)):
             output = nn.predict(X_test[i])
             print(f"Input: {X_test[i]}, Predicted Output: {output}, Expected Output: {y_test[i]}")
 
-        try:
-          print("Que desea hacer con el modelo entrenado?")
-          print("1. Ejecutar Feed Forward")
-          print("2. Seguir entrenando la red")
-          print("3. Guardar el modelo")
-          print("4. Ver gráfica del error")
-          option = input("Seleccione una opción (1/2/3/4): ")
-
-          if option == "1":
-            option_feed_forward = input("Desea ingresar el vector manualmente o cargarlo desde un archivo? (1/2): ")
-            if option_feed_forward == "1":
-              vector = input("Ingrese el vector de entrada (separado por comas): ")
-              vector = np.array([float(i) for i in vector.split(",")])
-              if vector.ndim == 1:
-                # Transform the vector to a 2D array row vector
-                vector = vector.reshape(1, -1)
-              output = nn.predict(vector)
-              print(f"Input: {vector}, Predicted Output: {output}")
-
-            elif option_feed_forward == "2":
-              vector_file = input("Ingrese el nombre del archivo CSV de entrada (por ejemplo: vector.csv): ")
-              vector = load_file(vector_file)
-
-              for i in range(len(vector)):
-                if vector[i].ndim == 1:
-                  vector[i] = vector[i].reshape(1, -1)
-                output = nn.predict(vector[i])
-                print(f"Input: {vector[i]}, Predicted Output: {output}")
-            
-
-        except ValueError as e:
-          print("Error: Por favor, ingrese valores numéricos válidos.", e)
-          return
-
       elif option == "2":
-        file_path = input("Ingrese la ruta del archivo de configuración: ")
+        nn_file_name = input("Ingrese el nombre del archivo de configuración: ")
+        path = os.path.join(os.path.dirname(__file__), nn_file_name)
+        if os.path.exists(path):
+          # Load the model from the file
+          # Create the NN (No matter the params, they will be overwritten)
+          nn = NeuralNetwork(2, 4, 4, 2, learning_rate=0.1)
+          nn.load_model(nn_file_name)
+          print("Modelo cargado exitosamente.")
+        else:
+          print("Error: El archivo de configuración no existe.")
+          return
       else:
         print("Opción no válida. Por favor, ingrese '1' o '2'.")
         return
+      
+      # What to do with the trained model
+      # After training or loading the model, we can ask the user what to do with it
+      while True:
+        print("Que desea hacer con el modelo entrenado?")
+        print("1. Ejecutar Feed Forward")
+        print("2. Seguir entrenando la red")
+        print("3. Guardar el modelo")
+        print("4. Salir")
+        option = input("Seleccione una opción (1/2/3): ")
+
+        if option == "1":
+          option_feed_forward = input("Desea ingresar el vector manualmente o cargarlo desde un archivo? (1/2): ")
+
+          if option_feed_forward == "1":
+            vector = input("Ingrese el vector de entrada (E.g:1,1,3): ")
+            vector = np.array([float(i) for i in vector.split(",")])
+            if vector.ndim == 1:
+              # Transform the vector to a 2D array row vector
+              vector = vector.reshape(1, -1)
+            output = nn.predict(vector)
+            print(f"Input: {vector}, Predicted Output: {output}")
+
+          elif option_feed_forward == "2":
+            vector_file = input("Ingrese el nombre del archivo CSV de entrada (por ejemplo: vector.csv): ")
+            vector = load_file(vector_file)
+
+            for i in range(len(vector)):
+              if vector[i].ndim == 1:
+                vector[i] = vector[i].reshape(1, -1)
+              output = nn.predict(vector[i])
+              print(f"Input: {vector[i]}, Predicted Output: {output}")
+        elif option == "2":
+          # Ask for the new training data
+          new_train_file = input("Ingrese el nombre del nuevo archivo CSV de entrenamiento (por ejemplo: X_train.csv): ")
+          new_X_train = load_file(new_train_file)
+          new_train_y_file = input("Ingrese el nombre del nuevo archivo CSV de etiquetas de entrenamiento (por ejemplo: y_train.csv): ")
+          new_y_train = load_file(new_train_y_file)
+          new_epochs = int(input("Ingrese el número de épocas para seguir entrenando: "))
+
+          # Continue training the NN
+          nn.train(new_X_train, new_y_train, new_epochs)
+        elif option == "3":
+          # Ask for the file name to save the model
+          save_file = input("Ingrese el nombre del archivo para guardar el modelo (por ejemplo: model.pkl): ")
+          nn.save_model(save_file)
+          print(f"Modelo guardado en {save_file}")
+        elif option == "4": 
+          sys.exit("Saliendo del programa.")
+
+        else:
+          print("Opción no válida. Por favor, ingrese '1', '2', '3, o '4'.")
+          return
+    
     except ValueError as e:
       print("Error: Por favor, ingrese valores numéricos válidos.", e)
       return

@@ -1,6 +1,7 @@
 import numpy as np
 from Layer import Layer
 from functions import sigmoid, sigmoid_derivative
+from functions import graph
 
 class NeuralNetwork:
     def __init__(self, num_inputs_neurons, num_hidden_layers, num_neurons_hidden_layer, num_output_neurons, learning_rate=0.01):
@@ -68,7 +69,7 @@ class NeuralNetwork:
     # X: Matrix of inputs
     # Y: Matrix of outputs
     # epochs: Number of iterations
-    def train(self, x_train, y_train, x_test, y_test, epochs):
+    def train(self, x_train, y_train, epochs, x_test=None, y_test=None):
         errors = []
         for epoch in range(epochs):
             output_train = self.forward(x_train)
@@ -82,16 +83,27 @@ class NeuralNetwork:
             self.update_weights()
 
             # Test the model
-            output_test = self.forward(x_test)
-            error_test = np.mean((y_test - output_test) ** 2)
-            prediction_test = (output_test > 0.5).astype(int)
-            accuracy_test = np.mean(prediction_test == y_test)
-            
-            
-            print(f"Epoch {epoch + 1}/{epochs}")
-            print(f"Train Error: {error_train * 100:.2f}%, Train Accuracy: {accuracy_train * 100:.2f}%")
-            print(f"Test Error: {error_test * 100:.2f}%, Test Accuracy: {accuracy_test * 100:.2f}%")
+            if x_test is not None or y_test is not None:
+                output_test = self.forward(x_test)
+                error_test = np.mean((y_test - output_test) ** 2)
+                prediction_test = (output_test > 0.5).astype(int)
+                accuracy_test = np.mean(prediction_test == y_test)
+                print(f"Época {epoch + 1}/{epochs}")
+                print(f"Error de entrenamiento: {error_train * 100:.2f}%, Precisión de entrenamiento: {accuracy_train * 100:.2f}%")
+                print(f"Error de prueba: {error_test * 100:.2f}%, Precisión de prueba: {accuracy_test * 100:.2f}%")
+            else:
+                print(f"Época {epoch + 1}/{epochs}")
+                print(f"Error de entrenamiento: {error_train * 100:.2f}%, Precisión de entrenamiento: {accuracy_train * 100:.2f}%")
+
             print("-" * 50)
+
+        print("# Entrenamiento completado #")
+        print("¿Desea ver un gráfico del proceso de entrenamiento? (s/n)")
+        option = input("Opción: ")
+        if option.lower() == "s":
+            graph(epochs, errors)
+        else:
+            print("No se mostrará el gráfico.")
         return errors
 
     def predict(self, X):
@@ -99,5 +111,15 @@ class NeuralNetwork:
             return self.forward(X)
         else:
             return np.array([self.forward(x) for x in X])
+        
+    def save_model(self, filename):
+        # Save the model to a file
+        with open(filename, 'wb') as f:
+            np.save(f, self.layers)
+
+    def load_model(self, filename):
+        # Load the model from a file
+        with open(filename, 'rb') as f:
+            self.layers = np.load(f, allow_pickle=True)
 
 
