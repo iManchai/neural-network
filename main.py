@@ -79,7 +79,7 @@ def main():
         print("2. Seguir entrenando la red")
         print("3. Guardar el modelo")
         print("4. Salir")
-        option = input("Seleccione una opción (1/2/3): ")
+        option = input("Seleccione una opción (1/2/3/4): ")
 
         if option == "1":
           option_feed_forward = input("Desea ingresar el vector manualmente o cargarlo desde un archivo? (1/2): ")
@@ -114,14 +114,12 @@ def main():
           nn.train(new_X_train, new_y_train, new_epochs)
         elif option == "3":
           # Ask for the file name to save the model
-          save_file = input("Ingrese el nombre del archivo para guardar el modelo (por ejemplo: model.pkl): ")
-          nn.save_model(save_file)
-          print(f"Modelo guardado en {save_file}")
+          nn.save_model()
+          print(f"Modelo guardado en nn.pkl")
         elif option == "4": 
           sys.exit("Saliendo del programa.")
         else:
           print("Opción no válida. Por favor, ingrese '1', '2', '3, o '4'.")
-          return
     
     except ValueError as e:
       print("Error: Por favor, ingrese valores numéricos válidos.", e)

@@ -112,9 +112,9 @@ class NeuralNetwork:
         else:
             return np.array([self.forward(x) for x in X])
         
-    def save_model(self, filename):
+    def save_model(self):
         # Save the model to a file
-        with open(filename, 'wb') as f:
+        with open("nn.pkl", 'wb') as f:
             np.save(f, self.layers)
 
     def load_model(self, filename):
